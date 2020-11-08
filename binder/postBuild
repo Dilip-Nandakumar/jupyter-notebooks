@@ -19,7 +19,7 @@ SCALA_VERSION=2.13.1 ALMOND_VERSION=0.8.2
 rm -f almond-scala-2.13
 
 # Install required Jupyter/JupyterLab extensions
-jupyter labextension install @jupyterlab/plotly-extension
+jupyter labextension install @jupyterlab/plotly-extension @jupyterlab/git nbdime-jupyterlab
 
 # Set indentation to two spaces
 JUPYTER_CONFIG_DIR=$(jupyter --config-dir)
