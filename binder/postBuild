@@ -55,3 +55,6 @@ EOF
 
 # Build Jupyter Lab
 jupyter lab build --minimize=False
+
+# Display kernel list
+jupyter kernelspec list
