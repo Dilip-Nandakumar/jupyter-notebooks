@@ -18,8 +18,64 @@ SCALA_VERSION=2.13.1 ALMOND_VERSION=0.8.2
   --metabrowse
 rm -f almond-scala-2.13
 
-# Install required Jupyter/JupyterLab extensions
-# jupyter labextension install @jupyterlab/plotly-extension @jupyterlab/git nbdime-jupyterlab
+#Install GopherNotes for Go 1.14
+GOVERS=1.14
+
+mkdir -p \
+	$HOME/.local/go/$GOVERS \
+	$HOME/go
+
+echo "::: download data"
+mkdir -p $HOME/examples/testdata
+curl -L http://data.astropy.org/tutorials/FITS-images/HorseHead.fits > $HOME/examples/testdata/HorseHead.fits
+
+echo "::: install Go ${GOVERS}..."
+curl -O -L https://golang.org/dl/go${GOVERS}.linux-amd64.tar.gz
+tar -C $HOME/.local/go/$GOVERS -zxf go${GOVERS}.linux-amd64.tar.gz
+/bin/rm go${GOVERS}.linux-amd64.tar.gz
+
+export GOROOT=$HOME/.local/go/$GOVERS/go
+export GOPATH=$HOME/go
+export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
+
+## install interesting packages
+echo "::: installing gophernotes..."
+env GO111MODULE=on go get github.com/gopherdata/gophernotes
+echo "::: installing gophernotes... [done]"
+
+## setup environment for Go
+cat >> $HOME/.setup-go << EOF
+## setup Go
+export GOROOT=$GOROOT
+export GOPATH=$GOPATH
+export PATH=\$GOPATH/bin:\$GOROOT/bin:\$PATH
+EOF
+
+cat >> $HOME/.bashrc << EOF
+. ~/.setup-go
+EOF
+
+## install the Go kernel
+mkdir -p ./binder/gophernotes
+cat >| ./binder/gophernotes/kernel.json << EOF
+{
+    "argv": [
+        "$GOPATH/bin/gophernotes",
+        "{connection_file}"
+    ],
+    "display_name": "Go",
+    "language": "go",
+    "name": "go",
+    "env": {
+        "GOPATH": "$GOPATH",
+        "GOROOT": "$GOROOT",
+        "PATH":   "$GOPATH/bin:$GOROOT/bin:$PATH"
+        }
+}
+EOF
+jupyter kernelspec install ./binder/gophernotes --user
+
+/bin/rm -rf binder
 
 # Set indentation to two spaces
 JUPYTER_CONFIG_DIR=$(jupyter --config-dir)
@@ -57,4 +113,5 @@ EOF
 jupyter lab build --minimize=False
 
 # Display kernel list
+echo "::: kernel list"
 jupyter kernelspec list
